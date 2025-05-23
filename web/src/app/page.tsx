@@ -10,6 +10,8 @@ import { formatAmount } from '@/lib/utils';
 const WalletBar = dynamic(() => import('../components/WalletBar'), { ssr: false })
 const Page: FC = () => {
 
+  const counter_address = "0x04ce4bbaccba2b85143ed11380eeade70eb861055f66906c2f148a00081dab8e"
+
   // Step 1 --> Read the latest block -- Start
   const { data: blockNumberData, isLoading: blockNumberIsLoading, isError: blockNumberIsError } = useBlockNumber({
     blockIdentifier: 'latest' as BlockNumber
@@ -20,18 +22,18 @@ const Page: FC = () => {
   // Step 2 --> Read your balance -- Start
   const { address: userAddress } = useAccount();
   const { isLoading: balanceIsLoading, isError: balanceIsError, error: balanceError, data: balanceData } = useBalance({
+    token: '0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d',
     address: userAddress,
     watch: true
   });
   // Step 2 --> Read your balance -- End
 
   // Step 3 --> Read counter from contract -- Start
-  const contractAddress = "0x03c317b62e7bbabc31c097f534bb989194efabcd6a53ce2080b98c4a9c08675a";
   const { data: readData, refetch: dataRefetch, isError: readIsError, isLoading: readIsLoading, error: readError } = useReadContract({
     functionName: "get_counter",
     args: [],
     abi: ABI as Abi,
-    address: contractAddress,
+    address: counter_address,
     watch: true,
     refetchInterval: 1000
   });
@@ -46,7 +48,7 @@ const Page: FC = () => {
   const typedABI = ABI as Abi;
   const { contract } = useContract({
     abi: typedABI,
-    address: contractAddress,
+    address: counter_address,
   });
   const calls = useMemo(() => {
     if (!userAddress || !contract) return [];
@@ -180,10 +182,10 @@ const Page: FC = () => {
               <p>{blockNumberData! < workshopEnds ? "Workshop is live" : "Workshop has ended"}</p>
             </div>
           )}
-          {/* <div className={`p-4 border-black border`}>
+          <div className={`p-4 border-black border`}>
             <h3 className="text-lg font-bold mb-2">Read the Blockchain</h3>
-            <p>Current Block: 0</p>
-          </div> */}
+            <p>Current Block: {blockNumberData} </p>
+          </div>
           {/* Step 1 --> Read the latest block -- End */}
 
           {/* Step 2 --> Read your balance -- Start */}
@@ -243,7 +245,7 @@ const Page: FC = () => {
 
           {/* Step 3 --> Read from a contract -- Start */}
           <div className="p-4 bg-white border-black border">
-            <h3 className="text-lg font-bold mb-2">Contract Balance</h3>
+            <h3 className="text-lg font-bold mb-2">Counter Amount</h3>
             <p>Balance: {readData?.toString()}</p>
             <button
               onClick={() => dataRefetch()}
